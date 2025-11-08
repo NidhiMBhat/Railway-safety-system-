@@ -58,6 +58,7 @@ AI model predicts safety status
 Frontend updates result dynamically
 
 🚀 How to Run Locally
+
 1️⃣ Train the Model (optional)
 python train_model.py
 
