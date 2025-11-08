@@ -27,7 +27,7 @@ This project addresses two major railway safety issues:
 - The model achieves high accuracy using layers of convolution, pooling, dropout, and ReLU activations.
 
 **File:** `train_model.py`  
-```python
+
 
 Conv2D → MaxPooling2D → Flatten → Dense(128, relu) → Dropout(0.5) → Dense(Softmax)
 
