@@ -5,7 +5,7 @@ venv/
 dataset/
 augmented_dataset/
 augmented_output/
-input_images/
+input images/
 test_images/
 
 # Ignore temporary files

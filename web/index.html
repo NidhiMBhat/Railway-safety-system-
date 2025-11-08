@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Railway Crack Detection Monitor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a, #111827, #1e1e2f);
+      color: #f9fafb;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 35px;
+      font-size: 2rem;
+      color: #00e5ff;
+      text-shadow: 0 0 12px #00e5ff, 0 0 22px #0078ff;
+      letter-spacing: 1px;
+    }
+
+    .about {
+      max-width: 600px;
+      margin: 20px auto;
+      font-size: 0.95rem;
+      color: #b0bec5;
+      background: rgba(255,255,255,0.05);
+      padding: 12px 16px;
+      border-radius: 10px;
+      line-height: 1.5;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+    }
+
+    .stream {
+      margin-top: 25px;
+      border: 3px solid #00e5ff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 25px #00e5ff70;
+      background: #000000aa;
+    }
+
+    img {
+      border-radius: 10px;
+    }
+
+    #statusBox {
+      margin-top: 25px;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 12px 18px;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 300px;
+      transition: 0.4s;
+    }
+
+    .safe {
+      background: rgba(0, 255, 204, 0.1);
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      box-shadow: 0 0 15px #00ffcc40;
+    }
+
+    .danger {
+      background: rgba(255, 0, 0, 0.1);
+      color: #ff4444;
+      border: 1px solid #ff4444;
+      box-shadow: 0 0 15px #ff444440;
+      animation: blink 1s step-start 0s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.6; }
+    }
+
+    #detailBox {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 15px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    footer a {
+      color: #00e5ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 500px) {
+      img { width: 90%; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🚄 AI Railway Crack Detection Monitor</h1>
+
+  <div class="about">
+    Real-time monitoring interface that captures frames from a camera and
+    sends them to an AI model for railway track crack detection. The interface
+    updates every few seconds to show the live safety status.
+  </div>
+
+  <div class="stream">
+    <img id="video" src="/stream" width="375" height="325">
+  </div>
+
+  <div id="statusBox">Status: Waiting for AI result...</div>
+  <div id="detailBox"></div>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  
+
+  <script>
+    function captureAndSendFrame() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.width;
+      canvas.height = video.height;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append("frame", blob);
+
+        fetch("http://192.168.223.36:5000/predict", {
+          method: "POST",
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          const statusBox = document.getElementById("statusBox");
+          const detailBox = document.getElementById("detailBox");
+
+          if (data.result === "danger") {
+            statusBox.textContent = `⚠️ DANGER DETECTED: ${data.class.toUpperCase()}`;
+            statusBox.className = "danger";
+          } else {
+            statusBox.textContent = ` SAFE: ${data.class.toUpperCase()}`;
+            statusBox.className = "safe";
+          }
+
+          detailBox.innerHTML = `Confidence: ${data.confidence}%<br>Error: ${(100 - parseFloat(data.confidence)).toFixed(2)}%`;
+        })
+        .catch(err => {
+          console.error("Prediction error:", err);
+          const statusBox = document.getElementById("statusBox");
+          statusBox.textContent = " Error receiving response!";
+          statusBox.className = "danger";
+        });
+      }, "image/jpeg");
+    }
+
+    setInterval(captureAndSendFrame, 5000);
+  </script>
+</body>
+</html>
