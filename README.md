@@ -28,6 +28,7 @@ This project addresses two major railway safety issues:
 
 **File:** `train_model.py`  
 ```python
+
 Conv2D → MaxPooling2D → Flatten → Dense(128, relu) → Dropout(0.5) → Dense(Softmax)
 
 **Model Features:**
